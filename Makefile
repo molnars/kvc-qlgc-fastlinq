@@ -6,6 +6,7 @@ CONFDIR=/etc
 endif
 
 install:
+
         mkdir -p $(DESTDIR)/lib/kvc/
 	install -v -m 644 qlgc-fastlinq-kmod-lib.sh $(DESTDIR)/lib/kvc/
 	install -v -m 644 qlgc-fastlinq-kmod.conf $(CONFDIR)/kvc/

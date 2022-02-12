@@ -7,6 +7,7 @@ endif
 
 install:
 	mkdir -p $(DESTDIR)/lib/kvc/
+	mkdir -p $(CONFDIR)/kvc/
 	install -v -m 644 qlgc-fastlinq-kmod-lib.sh $(DESTDIR)/lib/kvc/
 	install -v -m 644 qlgc-fastlinq-kmod.conf $(CONFDIR)/kvc/
 	install -v -m 755 qlgc-fastlinq-kmod-wrapper.sh $(DESTDIR)/lib/kvc/

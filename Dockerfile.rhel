@@ -1,26 +1,45 @@
-FROM registry.access.redhat.com/ubi8:latest
-MAINTAINER "coreos@lists.fedoraproject.org"
+FROM quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c7ac0fe8c125d9b52bb58f2026c9117b20e8bf2a440b70a4ec4c3db7bb25e8d8
+
 WORKDIR /build/
 
-# First update the base container to latest versions of everything
-RUN yum update -y
+RUN yum -y install git make sudo gcc cpio \
+&& yum clean all \
+&& rm -rf /var/cache/dnf
 
 # Expecting kmod software version as an input to the build
 ARG KMODVER
-# Grab the software from upstream
-#ADD https://github.com/kmods-via-containers/simple-kmod/archive/${KMODVER}.tar.gz ./file.tar.gz
-ADD https://github.com/molnars/kvc-qlgc-fastlinq/archive/${KMODVER}.tar.gz ./file.tar.gz
-RUN tar -x --strip-components=1 -f ./file.tar.gz
 
-# Expecting kernel version as an input to the build
-ARG KVER
+      # Grab the software from upstream
+RUN git clone https://github.com/molnars/qlgc-fastlinq.git
+WORKDIR qlgc-fastlinq
+RUN rpm2cpio qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm |cpio -idmv
+      #rpm -iv qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm
+RUN tar xvf fastlinq-8.55.13.0.tgz
+      #RUN rpm -i kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
+      #RUN rpm -i qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.src.rpm
 
-# Note, your host must have access to repos where kernel developement
-# packages can be installed. If it doesn't the following steps will
-# fail
+      #RUN tail -f /dev/null
+      # Prep and build the module
+WORKDIR fastlinq-8.55.13.0
+      #RUN make buildprep KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER} \
+      #&& make all       KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER} \
+      #&& make install   KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER}
+      #WORKDIR fastlinq-8.55.13.0
+RUN make subsystem
+RUN cp qed*.*/src/*.ko .
+RUN cp qed*.*/*.ko .
+ADD qed.ko /lib/modules/$(uname -r)/weak-modules/.
+ADD qedr.ko /lib/modules/$(uname -r)/weak-modules/.
+ADD qede.ko /lib/modules/$(uname -r)/weak-modules/.
+ADD qedf.ko /lib/modules/$(uname -r)/weak-modules/.
+ADD qedn.ko /lib/modules/$(uname -r)/weak-modules/.
+RUN echo "override qed * weak-updates/qed.ko" > fastlinq.conf
+RUN echo "override qedn * weak-updates/qedn.ko" >> fastlinq.conf
+RUN echo "override qede * weak-updates/qede.ko" >> fastlinq.conf
+RUN echo "override qedr * weak-updates/qedr.ko" >> fastlinq.conf
+RUN echo "override qedf * weak-updates/qedf.ko" >> fastlinq.conf
+ADD fastlinq.conf /etc/modprobe.d/fastlinq.conf
 
-# Prep and build the module
-RUN yum install -y make sudo
-RUN make buildprep KVER=${KVER} KMODVER=${KMODVER}
-RUN make all       KVER=${KVER} KMODVER=${KMODVER}
-RUN make install   KVER=${KVER} KMODVER=${KMODVER}
+#RUN make install
+# Add the helper tools
+

@@ -12,33 +12,33 @@ ARG KMODVER
       # Grab the software from upstream
 RUN git clone https://github.com/molnars/qlgc-fastlinq.git
 WORKDIR qlgc-fastlinq
-RUN rpm2cpio qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm |cpio -idmv
-      #rpm -iv qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm
-RUN tar xvf fastlinq-8.55.13.0.tgz
-      #RUN rpm -i kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
+#RUN rpm2cpio qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm |cpio -idmv
+#RUN rpm -iv qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm
+#RUN tar xvf fastlinq-8.55.13.0.tgz
+      RUN rpm -i kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
       #RUN rpm -i qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.src.rpm
 
       #RUN tail -f /dev/null
       # Prep and build the module
-WORKDIR fastlinq-8.55.13.0
+#WORKDIR fastlinq-8.55.13.0
       #RUN make buildprep KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER} \
       #&& make all       KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER} \
       #&& make install   KVER=$(rpm -q --qf "%{VERSION}-%{RELEASE}.%{ARCH}"  kernel-core) KMODVER=${KMODVER}
       #WORKDIR fastlinq-8.55.13.0
-RUN make subsystem
-RUN cp qed*.*/src/*.ko .
-RUN cp qed*.*/*.ko .
-ADD qed.ko /lib/modules/$(uname -r)/weak-modules/.
-ADD qedr.ko /lib/modules/$(uname -r)/weak-modules/.
-ADD qede.ko /lib/modules/$(uname -r)/weak-modules/.
-ADD qedf.ko /lib/modules/$(uname -r)/weak-modules/.
-ADD qedn.ko /lib/modules/$(uname -r)/weak-modules/.
-RUN echo "override qed * weak-updates/qed.ko" > fastlinq.conf
-RUN echo "override qedn * weak-updates/qedn.ko" >> fastlinq.conf
-RUN echo "override qede * weak-updates/qede.ko" >> fastlinq.conf
-RUN echo "override qedr * weak-updates/qedr.ko" >> fastlinq.conf
-RUN echo "override qedf * weak-updates/qedf.ko" >> fastlinq.conf
-ADD fastlinq.conf /etc/modprobe.d/fastlinq.conf
+#RUN make subsystem
+#RUN cp qed*.*/src/*.ko .
+#RUN cp qed*.*/*.ko .
+#ADD qed.ko /lib/modules/$(uname -r)/weak-modules/.
+#ADD qedr.ko /lib/modules/$(uname -r)/weak-modules/.
+#ADD qede.ko /lib/modules/$(uname -r)/weak-modules/.
+#ADD qedf.ko /lib/modules/$(uname -r)/weak-modules/.
+#ADD qedn.ko /lib/modules/$(uname -r)/weak-modules/.
+#RUN echo "override qed * weak-updates/qed.ko" > fastlinq.conf
+#RUN echo "override qedn * weak-updates/qedn.ko" >> fastlinq.conf
+#RUN echo "override qede * weak-updates/qede.ko" >> fastlinq.conf
+#RUN echo "override qedr * weak-updates/qedr.ko" >> fastlinq.conf
+#RUN echo "override qedf * weak-updates/qedf.ko" >> fastlinq.conf
+#ADD fastlinq.conf /etc/modprobe.d/fastlinq.conf
 
 #RUN make install
 # Add the helper tools

@@ -122,7 +122,8 @@ load_kmods() {
     echo "Loading kernel modules using the kernel module container..."
     for module in ${KMOD_NAMES}; do
 
-        kabi_check_module ${module}.ko
+        #kabi_check_module ${module}.ko
+        kabi_check_module ${module}
 
         if is_kmod_loaded ${module}; then
             echo "Kernel module ${module} already loaded"

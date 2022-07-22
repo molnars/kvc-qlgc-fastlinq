@@ -2,20 +2,33 @@ FROM quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c7ac0fe8c125d9b52bb58
 
 WORKDIR /build/
 
-RUN yum -y install git make sudo gcc cpio \
-&& yum clean all \
-&& rm -rf /var/cache/dnf
+#RUN yum -y install git make sudo gcc cpio \
+#&& yum clean all \
+#&& rm -rf /var/cache/dnf
 
 # Expecting kmod software version as an input to the build
 ARG KMODVER
 
       # Grab the software from upstream
-RUN git clone https://github.com/molnars/qlgc-fastlinq.git
+RUN git clone https://github.com/molnars/qlgc-fastlinq.git --branch rpm870
 WORKDIR qlgc-fastlinq
+RUN rpm-ostree install custom-module-20220722-1.noarch.rpm
+###kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
+
+RUN echo "blacklist qed" > fastlinq-denylist.conf
+RUN echo "blacklist qedi" >> fastlinq-denylist.conf
+RUN echo "blacklist qedr" >> fastlinq-denylist.conf
+RUN echo "blacklist qede" >> fastlinq-denylist.conf
+RUN echo "blacklist qedf" >> fastlinq-denylist.conf
+ADD fastlinq.conf /etc/modprobe.d/fastlinq-denylist.conf
+RUN rpm-ostree ex initramfs --trace=/etc/modprobe.d/fastlinq-denylist.conf
+
+
 #RUN rpm2cpio qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm |cpio -idmv
 #RUN rpm -iv qlgc-fastlinq-8.55.13.0-2.rhel8u3.src.rpm
 #RUN tar xvf fastlinq-8.55.13.0.tgz
-      RUN rpm -i kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
+      #RUN rpm -i kmod-qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.%{ARCH}.rpm
+
       #RUN rpm -i qlgc-fastlinq-8.55.13.0-2.rhel%{VERSION}u%{RELEASE}.src.rpm
 
       #RUN tail -f /dev/null
@@ -39,7 +52,6 @@ WORKDIR qlgc-fastlinq
 #RUN echo "override qedr * weak-updates/qedr.ko" >> fastlinq.conf
 #RUN echo "override qedf * weak-updates/qedf.ko" >> fastlinq.conf
 #ADD fastlinq.conf /etc/modprobe.d/fastlinq.conf
-
 #RUN make install
 # Add the helper tools
 
